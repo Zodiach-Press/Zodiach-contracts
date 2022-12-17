@@ -1,0 +1,38 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+
+# Test output
+coverage/
+
+# IDEs and editors
+.idea
+.vscode
+*.swp
+
+# Miscellaneous
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log
+yarn-error.log
+.yarn-integrity
+.yarn-metadata.json
+.yarnrc
+
+# Config files
+.eslintrc
+.eslintignore
+.prettierrc
+.prettierignore
+
+# Executables
+*.exe

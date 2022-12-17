@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
-// Modified ERC721A Contracts v4.2.3
+// Inherited from ERC721A Contracts v4.2.3
 // Creator: Jeffrey Anthony @ Tech Enterprises 
-// line 86 has been edited begrudgingly to uint256 private constant _MAX_MINT_ERC2309_QUANTITY_LIMIT = 504000; the previous amount was 5000
 
 pragma solidity ^0.8.17;
 
@@ -9,7 +8,7 @@ import '../node_modules/erc721a/contracts/extensions/ERC721ABurnable.sol';
 import '../node_modules/erc721a/contracts/extensions/ERC721AQueryable.sol';
 import "../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
 
-contract Zodiach is ERC721A('Zodiach Press', 'ZOD'), ERC721ABurnable, ERC721AQueryable, AccessControl {
+contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnable, ERC721AQueryable, AccessControl {
     /**
      * @dev Base URI for computing {tokenURI} in 721A. If set, the resulting URI for each
      * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
