@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+// Zodiach Press NFT Contract with Expandable URI method
 // Inherited from ERC721A Contracts v4.2.3
 // Creator: Jeffrey Anthony @ Tech Enterprises 
 
