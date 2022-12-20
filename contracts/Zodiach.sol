@@ -15,10 +15,17 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
      * by default, it can be overridden in child contracts.
      */
 
-    string private _URI;
+
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant URI_ROLE = keccak256("URI_ROLE");
+    uint256 internal _tokenCount = 0;
+    struct uriHelper {
+        uint256 upperLimit;
+        string uri;
+    }
+    mapping(uint256 => uriHelper) internal uriMap;
+
     
     function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC721A, IERC721A) returns (bool) {
         // The interface IDs are constants representing the first 4 bytes
@@ -34,42 +41,52 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
     }
 
     constructor() {
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
         _grantRole(URI_ROLE, msg.sender);
-        _mintERC2309(msg.sender, 764);
-        _URI = 'http://192.168.1.3/nft/json/';
-
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender); // not really necessary
     }
 
     // =============================================================
     //                     URI OPERATIONS
     // =============================================================
 
-    function updateURI(string memory _newURI) public onlyRole(URI_ROLE) returns (bool) {
-        _URI = _newURI;
-        return true;
-    }
 
-    /**
-     * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
-     */
     function tokenURI(uint256 _tokenId) public view virtual override(ERC721A, IERC721A) returns (string memory) {
         if (!_exists(_tokenId)) revert URIQueryForNonexistentToken();
-        return bytes(_URI).length != 0 ? string(abi.encodePacked(_URI, _toString(_tokenId), '.json')) : '';
+        return bytes(_baseURI(_tokenId)).length != 0 ? string(abi.encodePacked(_baseURI(_tokenId), "/", _toString(_tokenId), ".json")) : '';
+    }
+
+    function _baseURI(uint256 tokenIDsought) internal view returns (string memory URI) {
+        uint256 lowerLimit = 0;
+        while (lowerLimit < _tokenCount) {
+            if(lowerLimit < tokenIDsought && tokenIDsought < uriMap[lowerLimit].upperLimit) return uriMap[lowerLimit].uri;
+            lowerLimit = uriMap[lowerLimit].upperLimit;
+        }
+        
+    }
+
+    // MUST only update existing entries
+    function updateURI(uint256 lowerLimit, string memory _newURI) public onlyRole(URI_ROLE) {
+        if(bytes(uriMap[lowerLimit].uri).length !=0) uriMap[lowerLimit].uri = _newURI;
+    }
+
+    function setURIs(uint256 quantity, string memory uri) internal virtual {
+        require(quantity>0);
+        uriMap[_tokenCount] = uriHelper(_tokenCount + quantity,uri);
+        _tokenCount += quantity;
     }
 
     // =============================================================
     //                     MINT OPERATIONS
     // =============================================================
 
-    function mint(uint256 _quantity) public onlyRole(MINTER_ROLE) returns (bool) {
+    function mint(uint256 _quantity, string memory _uri) public onlyRole(MINTER_ROLE) {
+        setURIs(_quantity, _uri);
         _safeMint(msg.sender, _quantity);
-        return true;
     }
 
-    function mintTo(uint256 _quantity, address _mintee) public onlyRole(MINTER_ROLE) returns (bool) {
+    function mintTo(uint256 _quantity, address _mintee, string memory _uri) public onlyRole(MINTER_ROLE) {
+        setURIs(_quantity, _uri);
         _safeMint(_mintee, _quantity);
-        return true;
     }
 }
