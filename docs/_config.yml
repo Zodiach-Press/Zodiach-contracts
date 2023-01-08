@@ -1,0 +1,9 @@
+remote_theme: pages-themes/leap-day@v0.2.0
+plugins:
+- jekyll-remote-theme
+
+title: "Zodiach Press"
+description: "Strange, Dark, & Mysterious AI Art. Made in Maine."
+
+show_downloads: false
+google_analytics: [Your Google Analytics tracking ID]
