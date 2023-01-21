@@ -9,6 +9,7 @@ import "../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
 pragma solidity ^0.8.17;
 
 uint8 nextSaleSet = 0;
+uint8 currentSaleSet = 0;
 /*enum ZodiacSigns {
     "Aries: March 21 - April 19",
     "Taurus: April 20 - May 20",
@@ -95,16 +96,31 @@ abstract contract NFTSale is AccessControl {
         return ZodiachSales[nextSaleSet].state;
     }
 
+    function lockInNextSaleState() onlyRole("MINTER_ROLE") public {
+        require(ZodiachSales[nextSaleSet].state == 2, "ZodiachSale: URI not set");
+        ZodiachSales[nextSaleSet].state = 3;
+    }
+
+    function _beforePurchase() internal {
+        // check to see which month it is
+        
+    }
+
     function purchaseMonthly(uint8 _option) public {
+        _beforePurchase();
         //option = 7 will buy all six and do the combine in a single transaction
     }
     function purchaseMonthly(uint8 _option, uint16 _quantity) public {
         //option = 7 will buy all six and do the combine in a single transaction repeated a quantity of times
-
+        _beforePurchase();
     }
     function purchaseMonthly(string _flag) public { 
         // if flag == "all" buy all 6, do the combine, and buy all six again for the complete set in a single transaction
+        _beforePurchase();
+    }
 
+    function combineMonthly() public {
+        // check if caller owns six of this month's correct numbers
     }
 
     function combineMonthly(uint16 _monthNumber) public {

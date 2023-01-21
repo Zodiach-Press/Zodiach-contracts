@@ -5,7 +5,6 @@ npm-debug.log*
 build/
 
 # Dependency directories
-node_modules/
 
 # Test output
 coverage/

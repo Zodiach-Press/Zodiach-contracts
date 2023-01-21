@@ -45,6 +45,7 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
         _grantRole(MINTER_ROLE, msg.sender);
         _grantRole(URI_ROLE, msg.sender);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender); // not really necessary
+        _grantRole(OWNER, msg.sender);
     }
 
     // =============================================================
@@ -57,21 +58,21 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
         return bytes(_baseURI(_tokenId)).length != 0 ? string(abi.encodePacked(_baseURI(_tokenId), "/", _toString(_tokenId), ".json")) : '';
     }
 
-    function _baseURI(uint256 tokenIDsought) internal view returns (string memory URI) {
+    function _baseURI(uint256 _tokenIDsought) internal view returns (string memory URI) {
         uint256 lowerLimit = 0;
         while (lowerLimit < _tokenCount) {
-            if(lowerLimit < tokenIDsought && tokenIDsought < uriMap[lowerLimit].upperLimit) return uriMap[lowerLimit].uri;
+            if(lowerLimit < _tokenIDsought && _tokenIDsought < uriMap[lowerLimit].upperLimit) return uriMap[lowerLimit].uri;
             lowerLimit = uriMap[lowerLimit].upperLimit;
         }
         
     }
 
     // MUST only update existing entries
-    function updateURI(uint256 lowerLimit, string memory _newURI) public onlyRole(URI_ROLE) {
-        if(bytes(uriMap[lowerLimit].uri).length !=0) uriMap[lowerLimit].uri = _newURI;
+    function updateURI(uint256 _lowerLimit, string memory _newURI) public onlyRole(URI_ROLE) {
+        if(bytes(uriMap[_lowerLimit].uri).length !=0) uriMap[_lowerLimit].uri = _newURI;
     }
 
-    function setURIs(uint256 quantity, string memory uri) internal virtual {
+    function allocateAndSetURIs(uint256 quantity, string memory uri) internal virtual {
         require(quantity>0);
         uriMap[_tokenCount] = uriHelper(_tokenCount + quantity,uri);
         _tokenCount += quantity;
@@ -82,12 +83,12 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
     // =============================================================
 
     function mint(uint256 _quantity, string memory _uri) public onlyRole(MINTER_ROLE) {
-        setURIs(_quantity, _uri);
+        allocateAndSetURIs(_quantity, _uri);
         _safeMint(msg.sender, _quantity);
     }
 
     function mintTo(uint256 _quantity, address _mintee, string memory _uri) public onlyRole(MINTER_ROLE) {
-        setURIs(_quantity, _uri);
+        allocateAndSetURIs(_quantity, _uri);
         _safeMint(_mintee, _quantity);
     }
 }
