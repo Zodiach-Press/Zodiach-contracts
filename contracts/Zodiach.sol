@@ -44,7 +44,7 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
         createNextSale("Aries", "March 21, 2022 - April 19, 2022");
         setNextSaleConditions(1616543999 , 5000000000000);
         setNextSaleURI("https://github.com/Zodiach-Press/nft-gallery");
-    }
+        // intention is to _mintERC2309(msg.sender, 4900); ... may as well build a wrapper function the constructor could insert all data
 
     // =============================================================
     //                     URI OPERATIONS
@@ -59,7 +59,7 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
     function _baseURI(uint256 _tokenIDsought) internal view returns (string memory URI) {
         uint256 lowerLimit = 0;
         while (lowerLimit < _nextTokenId()) {
-            if(lowerLimit < _tokenIDsought && _tokenIDsought < uriMap[lowerLimit].upperLimit) return uriMap[lowerLimit].uri;
+            if(lowerLimit <= _tokenIDsought && _tokenIDsought < uriMap[lowerLimit].upperLimit) return uriMap[lowerLimit].uri;
             lowerLimit = uriMap[lowerLimit].upperLimit;
         }
         
@@ -70,6 +70,7 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
         if(bytes(uriMap[_lowerLimit].uri).length !=0) uriMap[_lowerLimit].uri = _newURI;
     }
 
+    // MUST only update ONE 'tuple'
     function allocateAndSetURIs(uint256 quantity, string memory uri) internal virtual {
         require(quantity>0);
         uriMap[_nextTokenId()] = uriHelper(_nextTokenId() + quantity,uri);
