@@ -5,22 +5,17 @@
 
 pragma solidity ^0.8.17;
 
-import '../node_modules/erc721a/contracts/extensions/ERC721ABurnable.sol';
-import '../node_modules/erc721a/contracts/extensions/ERC721AQueryable.sol';
-import "../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
+import 'https://raw.githubusercontent.com/chiru-labs/ERC721A/main/contracts/extensions/ERC721ABurnable.sol';
+import 'https://raw.githubusercontent.com/chiru-labs/ERC721A/main/contracts/extensions/ERC721AQueryable.sol';
+import "https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-contracts/master/contracts/access/AccessControl.sol";
+import "./ZodiachSale.sol";
 
-contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnable, ERC721AQueryable, AccessControl {
-    /**
-     * @dev Base URI for computing {tokenURI} in 721A. If set, the resulting URI for each
-     * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
-     * by default, it can be overridden in child contracts.
-     */
-
+contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnable, ERC721AQueryable, AccessControl, NFTSale {
 
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant URI_ROLE = keccak256("URI_ROLE");
-    uint256 internal _tokenCount = 0;
+    
     struct uriHelper {
         uint256 upperLimit;
         string uri;
@@ -44,8 +39,11 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
     constructor() {
         _grantRole(MINTER_ROLE, msg.sender);
         _grantRole(URI_ROLE, msg.sender);
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender); // not really necessary
-        _grantRole(OWNER, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(OWNER_ROLE, msg.sender);
+        createNextSale("Aries", "March 21, 2022 - April 19, 2022");
+        setNextSaleConditions(1616543999 , 5000000000000);
+        setNextSaleURI("https://github.com/Zodiach-Press/nft-gallery");
     }
 
     // =============================================================
@@ -60,7 +58,7 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
 
     function _baseURI(uint256 _tokenIDsought) internal view returns (string memory URI) {
         uint256 lowerLimit = 0;
-        while (lowerLimit < _tokenCount) {
+        while (lowerLimit < _nextTokenId()) {
             if(lowerLimit < _tokenIDsought && _tokenIDsought < uriMap[lowerLimit].upperLimit) return uriMap[lowerLimit].uri;
             lowerLimit = uriMap[lowerLimit].upperLimit;
         }
@@ -74,8 +72,7 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
 
     function allocateAndSetURIs(uint256 quantity, string memory uri) internal virtual {
         require(quantity>0);
-        uriMap[_tokenCount] = uriHelper(_tokenCount + quantity,uri);
-        _tokenCount += quantity;
+        uriMap[_nextTokenId()] = uriHelper(_nextTokenId() + quantity,uri);
     }
 
     // =============================================================
