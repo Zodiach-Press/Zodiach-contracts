@@ -8,9 +8,9 @@ pragma solidity ^0.8.17;
 import 'https://raw.githubusercontent.com/chiru-labs/ERC721A/main/contracts/extensions/ERC721ABurnable.sol';
 import 'https://raw.githubusercontent.com/chiru-labs/ERC721A/main/contracts/extensions/ERC721AQueryable.sol';
 import "https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-contracts/master/contracts/access/AccessControl.sol";
-import "./ZodiachSale.sol";
+// import "./ZodiachSale.sol";
 
-contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnable, ERC721AQueryable, AccessControl, NFTSale {
+contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnable, ERC721AQueryable, AccessControl {
 
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -36,16 +36,6 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
             //interfaceId == type(IAccessControl).interfaceId || super.supportsInterface(interfaceId); 
     }
 
-    constructor() {
-        _grantRole(MINTER_ROLE, msg.sender);
-        _grantRole(URI_ROLE, msg.sender);
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(OWNER_ROLE, msg.sender);
-        createNextSale("Aries", "March 21, 2022 - April 19, 2022");
-        setSaleConditions(1616543999 , 5000000000000);
-        setSaleURI("https://github.com/Zodiach-Press/nft-gallery");
-        // intention is to _mintERC2309(msg.sender, 4900); ... may as well build a wrapper function the constructor could insert all data
-    }
     // =============================================================
     //                     URI OPERATIONS
     // =============================================================
