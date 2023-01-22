@@ -8,8 +8,12 @@ import "https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-contracts/ma
 
 pragma solidity ^0.8.17;
 
-/* Zodiac Signs 
-    Aries, // March 21 - April 19            1616543999   
+/* Some helpful charts I needed to build this darned contraption
+We're trying to build a machine that can 'perpetually' mint sets of NFTs
+correctly according to plan of the stars and the creators
+
+Zodiac Signs and 2022 - 2023 cycle Dates and timestamps
+    Aries, // March 21 - April 19               1616543999   
     Taurus, // April 20 - May 20
     Gemini, // May 21 - June 20
     Cancer, // June 21 - July 22
@@ -21,33 +25,18 @@ pragma solidity ^0.8.17;
     Capricorn, // December 22 - January 19
     Aquarius, // January 20 - February 18
     Pisces // February 19 - March 20
+Each limited set set has a lifecycle integrated thusly...
+    NULL                    // 0
+    EMPTY_CONFIGURATION,    // 1
+    CONDITIONS_SET,         // 2
+    URI_SET,                // 3
+    SALE_APPROVED / LOCKED  // 4 // triggers next EMPTY_CONFIGURATION
+    PRIOR_TO_SALE ,         // 5
+    WHITELIST_SALE          // 6
+    PUBLIC_SALE             // 7
+    SALE_EXPIRED            // 8
 */
-
-/*enum NextSaleCurrentState {
-    EMPTY_CONFIGURATION,    // 0
-    CONDITIONS_CONFIGURED,  // 1
-    URI_CONFIGURED,         // 2
-    SALE_LOCKED_IN,         // 3
-    SALE_IN_EFFECT,         // 4
-    SALE_EXPIRED            // 5
-}*/
-
-/*
-    int8 represents state of the creation of each month's set.
-    It allows a decentralized approval process for minting new NFTs.
-
-                0                           1               Permissions
-    2*2^7
-    2*2^6      Editable                    LOCKED          OWNER_ROLE
-    2*2^5      Sign not yet                Sign Set        URI_ROLE
-    2*2^4      Price not yet set           Price Set       MINTER_ROLE
-    2*2^3      URI not yet set             URI Set         URI_ROLE
-    2*2^2      Not Ready for Presale       SALE APPROVED   MINTER_ROLE
-    2*2^1      Presale                     SALE STARTED
-    2*2^0      Purchase still possible     SALE EXPIRED     
-*/
-
-struct ZodiachSaleData {
+struct SaleData {
     string sign;
     string calendar;
     uint256 startTimestamp;
@@ -59,68 +48,69 @@ struct ZodiachSaleData {
 abstract contract NFTSale is AccessControl {
     uint8 nextUpcomingSet = 0;
 
-    mapping(uint16 => ZodiachSaleData) ZodiachSales;
+    mapping(uint16 => SaleData) ZodiachSales;
 
     function createNextSale(string memory _sign, string memory _calendar)
         public
         onlyRole(keccak256("OWNER_ROLE"))
         returns (int8)
     {
-        ZodiachSaleData memory newSaleData;
-        newSaleData.state = NextSaleCurrentState.EMPTY_CONFIGURATION;
+        SaleData memory newSaleData;
+        newSaleData.state = 1;
         newSaleData.calendar = _calendar;
         newSaleData.sign = _sign;
-        ZodiachSales[nextSaleSet] = newSaleData;
-        return checkNextSaleCurrentState();
+        ZodiachSales[nextUpcomingSet] = newSaleData;
+        return checkState();
     }
 
-    function setNextSaleConditions(uint256 _timestamp, uint256 _price)
+    function setSaleConditions(uint256 _timestamp, uint256 _price)
         public
         onlyRole(keccak256("MINTER_ROLE"))
         returns (int8)
     {
-        ZodiachSaleData storage v = ZodiachSales[nextSaleSet];
+        SaleData storage v = ZodiachSales[nextUpcomingSet];
         v.startTimestamp = _timestamp;
         v.price = _price;
-        if (v.state == NextSaleCurrentState.EMPTY_CONFIGURATION) {
-            v.state == NextSaleCurrentState.CONDITIONS_CONFIGURED;
+        if (v.state == 1) {
+            v.state = 2;
         }
-        return checkNextSaleCurrentState();
+        return checkState();
     }
 
-    function setNextSaleURI(string memory _uri)
+    function setSaleURI(string memory _uri)
         public
         onlyRole(keccak256("URI_ROLE"))
         returns (int8)
     {
-        ZodiachSaleData storage v = ZodiachSales[nextSaleSet];
+        SaleData storage v = ZodiachSales[nextUpcomingSet];
         v.uri = _uri;
-        if (v.state == NextSaleCurrentState.CONDITIONS_CONFIGURED) {
-            v.state == NextSaleCurrentState.URI_CONFIGURED;
+        if (v.state == 2) {
+            v.state = 3;
         }
-        return checkNextSaleCurrentState();
+        return checkState();
     }
 
-    function checkNextSaleCurrentState()
+    function checkState()
         public
         view
         onlyRole(keccak256("OWNER_ROLE"))
-        returns (uint8)
+        returns (int8)
     {
         return ZodiachSales[nextUpcomingSet].state;
     }
 
     function lockInNextSaleState() public onlyRole(keccak256("MINTER_ROLE")) {
-        ZodiachSaleData storage v = ZodiachSales[nextSaleSet];
+        SaleData storage v = ZodiachSales[nextUpcomingSet];
         require(
-            v.state == NextSaleCurrentState.CONDITIONS_CONFIGURED,
+            v.state > 2,
             "ZodiachSale: Next Sale Conditions not set"
         );
         require(
-            v.state == NextSaleCurrentState.URI_CONFIGURED,
+            v.state == 3,
             "ZodiachSale: Next Sale URI not set"
         );
-        v.state = NextSaleCurrentState.SALE_LOCKED_IN;
+        v.state = 4;
+
     }
 
     function _beforePurchase() internal {

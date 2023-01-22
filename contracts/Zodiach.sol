@@ -42,18 +42,16 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(OWNER_ROLE, msg.sender);
         createNextSale("Aries", "March 21, 2022 - April 19, 2022");
-        setNextSaleConditions(1616543999 , 5000000000000);
-        setNextSaleURI("https://github.com/Zodiach-Press/nft-gallery");
+        setSaleConditions(1616543999 , 5000000000000);
+        setSaleURI("https://github.com/Zodiach-Press/nft-gallery");
         // intention is to _mintERC2309(msg.sender, 4900); ... may as well build a wrapper function the constructor could insert all data
-
+    }
     // =============================================================
     //                     URI OPERATIONS
     // =============================================================
-
-
     function tokenURI(uint256 _tokenId) public view virtual override(ERC721A, IERC721A) returns (string memory) {
         if (!_exists(_tokenId)) revert URIQueryForNonexistentToken();
-        return bytes(_baseURI(_tokenId)).length != 0 ? string(abi.encodePacked(_baseURI(_tokenId), "/", _toString(_tokenId), ".json")) : '';
+        return bytes(_baseURI(_tokenId)).length != 0 ? string(abi.encodePacked(_baseURI(_tokenId), "/", _toString(_tokenId))) : '';
     }
 
     function _baseURI(uint256 _tokenIDsought) internal view returns (string memory URI) {
