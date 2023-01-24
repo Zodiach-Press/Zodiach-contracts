@@ -59,7 +59,7 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
     }
 
     // MUST only update ONE 'tuple'
-    function allocateAndSetURIs(uint256 quantity, string memory uri) internal virtual {
+    function allocateAndSetURIs(uint256 quantity, string memory uri) public onlyRole(MINTER_ROLE) virtual {
         require(quantity>0);
         uriMap[_nextTokenId()] = uriHelper(_nextTokenId() + quantity,uri);
     }
@@ -67,7 +67,6 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
     // =============================================================
     //                     MINT OPERATIONS
     // =============================================================
-
     function mint(uint256 _quantity, string memory _uri) public onlyRole(MINTER_ROLE) {
         allocateAndSetURIs(_quantity, _uri);
         _safeMint(msg.sender, _quantity);

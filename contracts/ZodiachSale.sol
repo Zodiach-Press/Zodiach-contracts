@@ -51,6 +51,8 @@ struct SaleData {
 contract NFTSale is AccessControl, Zodiach {
     uint8 nextUpcomingSet = 0;
     uint8 currentSet = 0;
+    uint256 highBid;
+    mapping(uint8 => uint16) mintedMap;
 
     mapping(uint16 => SaleData) ZodiachSales;
 
@@ -76,25 +78,24 @@ contract NFTSale is AccessControl, Zodiach {
         setSaleConditions(1616543999 , 5000000000000);
         setSaleURI("https://github.com/Zodiach-Press/nft-gallery");
         // intention is to _mintERC2309(msg.sender, 4900); ... may as well build a wrapper function the constructor could insert all data
+        // may not have to at all
     }
 
     function createNextSale(string memory _sign, string memory _calendar)
         public
         onlyRole(keccak256("OWNER_ROLE"))
-        returns (int8)
     {
+        require(ZodiachSales[nextUpcomingSet].state == 0, "Error: Cannot go farther than one month ahead.");
         SaleData memory newSaleData;
         newSaleData.state = 1;
         newSaleData.calendar = _calendar;
         newSaleData.sign = _sign;
         ZodiachSales[nextUpcomingSet] = newSaleData;
-        return checkState();
     }
 
     function setSaleConditions(uint256 _timestamp, uint256 _price)
         public
         onlyRole(keccak256("MINTER_ROLE"))
-        returns (int8)
     {
         SaleData storage v = ZodiachSales[nextUpcomingSet];
         v.startTimestamp = _timestamp;
@@ -102,29 +103,22 @@ contract NFTSale is AccessControl, Zodiach {
         if (v.state == 1) {
             v.state = 2;
         }
-        return checkState();
     }
 
     function setSaleURI(string memory _uri)
         public
         onlyRole(keccak256("URI_ROLE"))
-        returns (int8)
     {
         SaleData storage v = ZodiachSales[nextUpcomingSet];
         v.uri = _uri;
         if (v.state == 2) {
             v.state = 3;
         }
-        return checkState();
     }
 
-    function checkState()
-        public
-        view
-        onlyRole(keccak256("OWNER_ROLE"))
-        returns (int8)
-    {
-        return ZodiachSales[nextUpcomingSet].state;
+    function returnNextSaleState() public onlyRole(keccak256("OWNER_ROLE")) view returns (string memory, string memory, uint256, uint256, string memory, int8){
+        SaleData memory v = ZodiachSales[nextUpcomingSet];
+        return (v.sign, v.calendar, v.startTimestamp, v.price, v.uri, v.state);
     }
 
     // make sure there isnt a bug that comes back in and overwrites the current sale with 'state = 1'
@@ -139,29 +133,50 @@ contract NFTSale is AccessControl, Zodiach {
             "ZodiachSale: Next Sale URI not set"
         );
         v.state = 4;
-        ZodiachSales[nextUpcomingSet + 1].state = 1;
-
+        ZodiachSales[nextUpcomingSet++].state = 1;
     }
 
-    function _beforePurchase() internal view returns (uint16) {
+    function _beforePurchase() internal {
         // check if it is a certain amount of ticks prior to sale and check if sender is whitelisted
-        // check to see if there is a sale and return the set number
-        require(ZodiachSales[currentSet].state == 7, "Sale not in effect");
-        require(ZodiachSales[currentSet].qtyMinted <= 4900, "SOLD OUT");
-        return currentSet;
+        // check to see if there is a sale
+        require(ZodiachSales[currentSet].state > 3, "Sale not yet begun. Patience aligns the stars.");
+        if(block.timestamp > ZodiachSales[currentSet].startTimestamp ) {
+            ZodiachSales[currentSet].state = 7;
+        }
+        if(block.timestamp > (ZodiachSales[currentSet].startTimestamp - 3 hours)) {
+            ZodiachSales[currentSet].state = 6;
+
+        }
+
+        require(ZodiachSales[currentSet].state == 7, "Public sale not in effect.");
+        require(ZodiachSales[currentSet].qtyMinted <= 4000, "SOLD OUT");
     }
 
-    function purchaseMonthly(uint8[] memory _option) public payable {
-        uint16 set = _beforePurchase();
-        //option = 7 will burn six and award the seventh in a single transaction with combine event
+    function buy(uint8 _option) public payable {
+        require(msg.value > 120000000000000, "Send enough Ether");
+        require(mintedMap[_option] < 700, "One or more of the selected NFTs are SOLD OUT.");
+        uint256 idToMint = ((currentSet * 4900) // discover the set's range of IDs
+            + (_option * 700) // add the NFT option's range of ids
+            + mintedMap[_option]);  // add the individual mintId
+        transferFrom(MINTER_ROLE, msg.sender, idToMint);
+    }
+
+    function buyMonthly(uint8[] memory _option) public payable {
+        _beforePurchase();
+        //option = 7 will burn one of each totalling six and award the seventh in a single transaction with combine event
         if(_option[0] == 7) {
-
+            for(uint i = 0; i<7; i++) {
+                return;
+            }
         }
 
-        //option = 12 will buy all seven and burn the next seven with combine event // perhaps rename 'combine'
+        //option = 12 will buy seven and burn the next seven with combine event // perhaps rename 'combine'
         if(_option[0] == 12) {
-            
+            for(uint8 i = 0; i < 14; i++) {
+                return;
+            }
         }
+
         for(uint8 i = 0; i < _option.length; i++) {
 
         }
