@@ -1,42 +1,23 @@
 // SPDX-License-Identifier: MIT
 // Zodiach Press NFT Sales Contract
-//     * enables Minting of Monthly sets of six, combines into a seventh, annual auction and unlimited randoms
 // Creator: Jeffrey Anthony @ Tech Enterprises
 
 //import "../node_modules/@openzeppelin/contracts/access/AccessControl.sol";
+
 import "https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-contracts/master/contracts/access/AccessControl.sol";
 import "./Zodiach.sol";
 
 pragma solidity ^0.8.17;
 
-/* Some helpful charts I needed to build this darned contraption
+/* 
 We're trying to build a machine that can 'perpetually' mint sets of NFTs
-correctly according to plan of the stars and the creators
+correctly according to plan of the stars and its creators
 
-Zodiac Signs and 2022 - 2023 cycle Dates and timestamps
-    Aries, // March 21 - April 19               1616543999   
-    Taurus, // April 20 - May 20
-    Gemini, // May 21 - June 20
-    Cancer, // June 21 - July 22
-    Leo, // July 23 - August 22
-    Virgo, // August 23 - September 22
-    Libra, // September 23 - October 22
-    Scorpio, // October 23 - November 21
-    Sagittarius, // November 22 - December 21
-    Capricorn, // December 22 - January 19
-    Aquarius, // January 20 - February 18
-    Pisces // February 19 - March 20
-Each limited set set has a lifecycle integrated thusly...
-    NULL                    // 0
-    EMPTY_CONFIGURATION,    // 1
-    CONDITIONS_SET,         // 2
-    URI_SET,                // 3
-    SALE_APPROVED / LOCKED  // 4 // triggers next EMPTY_CONFIGURATION
-    PRIOR_TO_SALE ,         // 5
-    WHITELIST_SALE          // 6
-    PUBLIC_SALE             // 7
-    SALE_EXPIRED            // 8
+Zodiac Launch Date:
+  March 21 - April 19               
+  timestamp I believe 1616543999  
 */
+
 struct SaleData {
     string sign;
     string calendar;
@@ -160,38 +141,7 @@ contract NFTSale is AccessControl, Zodiach {
             + mintedMap[_option]);  // add the individual mintId
         transferFrom(MINTER_ROLE, msg.sender, idToMint);
     }
-
-    function buyMonthly(uint8[] memory _option) public payable {
-        _beforePurchase();
-        //option = 7 will burn one of each totalling six and award the seventh in a single transaction with combine event
-        if(_option[0] == 7) {
-            for(uint i = 0; i<7; i++) {
-                return;
-            }
-        }
-
-        //option = 12 will buy seven and burn the next seven with combine event // perhaps rename 'combine'
-        if(_option[0] == 12) {
-            for(uint8 i = 0; i < 14; i++) {
-                return;
-            }
-        }
-
-        for(uint8 i = 0; i < _option.length; i++) {
-
-        }
-
-    }
-
-    function purchaseMonthly(uint8 _option, uint16 _quantity) public payable {
-        //option = 7 will buy all six and do the combine in a single transaction repeated a quantity of times
-        _beforePurchase();
-    }
-
-    function combineMonthly(uint16 _monthNumber) public {
-        // check if caller owns six of the correct month numbers
-    }
-
+    
     function mintConstellation() public payable {
         // be sure to mint at the end of the tokenIds
     }
