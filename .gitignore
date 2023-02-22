@@ -36,3 +36,4 @@ yarn-error.log
 
 # Executables
 *.exe
+node_modules
