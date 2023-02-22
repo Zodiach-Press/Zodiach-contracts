@@ -5,12 +5,11 @@
 
 pragma solidity ^0.8.17;
 
-import 'https://raw.githubusercontent.com/chiru-labs/ERC721A/main/contracts/extensions/ERC721ABurnable.sol';
-import 'https://raw.githubusercontent.com/chiru-labs/ERC721A/main/contracts/extensions/ERC721AQueryable.sol';
-import "https://raw.githubusercontent.com/OpenZeppelin/openzeppelin-contracts/master/contracts/access/AccessControl.sol";
-// import "./ZodiachSale.sol";
+import 'erc721a/contracts/extensions/ERC721ABurnable.sol';
+import 'erc721a/contracts/extensions/ERC721AQueryable.sol';
+import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnable, ERC721AQueryable, AccessControl {
+contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721AQueryable, ERC721ABurnable, AccessControl {
 
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -76,4 +75,5 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721ABurnab
         allocateAndSetURIs(_quantity, _uri);
         _safeMint(_mintee, _quantity);
     }
+
 }
