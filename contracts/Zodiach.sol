@@ -31,8 +31,7 @@ contract Zodiach is ERC721A(unicode'Ƶodiach Press', unicode'Ƶ'), ERC721AQuerya
             interfaceId == 0x01ffc9a7 || // ERC165 interface ID for ERC165.
             interfaceId == 0x80ac58cd || // ERC165 interface ID for ERC721.
             interfaceId == 0x5b5e139f; // ERC165 interface ID for ERC721Metadata.
-            // Below is the interfaceid from AccessControl here https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/AccessControl.sol
-            //interfaceId == type(IAccessControl).interfaceId || super.supportsInterface(interfaceId); 
+            interfaceId == type(IAccessControl).interfaceId || super.supportsInterface(interfaceId); 
     }
 
     // =============================================================
